@@ -3,7 +3,6 @@ package mydb
 import (
 	"bufio"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"os"
@@ -115,50 +114,8 @@ func installDB(managerUser string, managerPassword string, addr string, appDbNam
 	}
 	fmt.Println("✔ Installation Complete. ")
 
-	info := dbInfo{SqlAddr: addr, DatabaseName:appDbName, AppUserName:appUser, AppUserPassword:appPassword}
+	info := dbInfo{SqlAddr: addr, DatabaseName: appDbName, AppUserName: appUser, AppUserPassword: appPassword}
 	info.writeFile()
 
 	return nil
-}
-
-type dbInfo struct {
-	SqlAddr string
-	DatabaseName string
-	AppUserName string
-	AppUserPassword string
-}
-
-func (d dbInfo) json() []byte {
-	ans, _ := json.Marshal(d)
-	return ans
-}
-
-func (d dbInfo) writeFile() {
-	data := d.json()
-	f, err := os.Create("./db.json")
-	if err != nil {
-		fmt.Println("⚠ Warning: Unable to create db.json. ")
-		return
-	}
-	// defer closing file
-	defer func() {
-		if err := f.Close(); err != nil {
-			fmt.Println("⚠ Unable to close file stream.")
-		}else{
-			fmt.Println("✔ Database information has been saved to db.json.")
-		}
-	}()
-
-	_, err = f.Write(data)
-	if err != nil {
-		fmt.Println("⚠ Warning: Unable to write db.json. ")
-		return
-	}
-
-	err = f.Sync()
-	if err != nil {
-		fmt.Println("⚠ Warning: Fail to save file db.json. " + err.Error())
-		return
-	}
-
 }
