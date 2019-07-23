@@ -6,7 +6,7 @@ use myotp;
 create table users
 (
     `user_id` int not null auto_increment,
-    `name` char,
+    `name` varchar(255),
     `privilege` tinyint default 0,
     primary key (`user_id`)
 );
