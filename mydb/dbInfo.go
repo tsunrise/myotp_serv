@@ -7,10 +7,20 @@ import (
 )
 
 type dbInfo struct {
-	SqlAddr         string
-	DatabaseName    string
-	AppUserName     string
-	AppUserPassword string
+	SqlAddr         string `json:"sql_addr"`
+	DatabaseName    string `json:"database_name"`
+	AppUserName     string `json:"app_user_name"`
+	AppUserPassword string `json:"app_user_password"`
+}
+
+func jsonToDbInfo(b []byte) (*dbInfo, error) {
+	var info dbInfo
+	err := json.Unmarshal(b, &info)
+	if err != nil {
+		return nil, err
+	}
+	return &info, err
+
 }
 
 func (d dbInfo) json() []byte {
