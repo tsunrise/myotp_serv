@@ -6,7 +6,7 @@ use myotp;
 create table users
 (
     `user_id` int not null auto_increment,
-    `name` varchar(255),
+    `name` varchar(255) unique,
     `privilege` tinyint default 0,
     primary key (`user_id`)
 );
@@ -14,7 +14,7 @@ create table users
 # group groups tickets
 create table `groups` (
                           `group_id` int not null auto_increment,
-                          `name` char,
+                          `name` varchar(512),
                           `user_id` int not null,
                           primary key (`group_id`),
                           foreign key (`user_id`)

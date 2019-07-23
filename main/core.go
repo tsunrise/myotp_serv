@@ -21,7 +21,7 @@ func main() {
 	}
 
 	// initialize database
-	db, err := mydb.InitDB()
+	db, _, err := mydb.InitDB()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
