@@ -3,14 +3,14 @@ package mydb
 import "database/sql"
 
 type StatementsSet struct {
-	NewUser     *sql.Stmt //name
+	NewUser     *sql.Stmt //name, hash
 	DeleteUser  *sql.Stmt //user_id
 	PromoteUser *sql.Stmt //user_id (set privilege to 1)
 	FireUser    *sql.Stmt //user_id (set privilege to 0)
 }
 
 func NewStatements(db *sql.DB) (*StatementsSet, error) {
-	newUser, err := db.Prepare("insert into users(`name`) values (?);")
+	newUser, err := db.Prepare("insert into users(`name`, `hash`) values (?, ?);")
 	if err != nil {
 		return nil, err
 	}

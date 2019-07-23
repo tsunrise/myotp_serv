@@ -26,7 +26,7 @@ func TestStmt(t *testing.T) {
 		return
 	}
 	go func() {
-		_, err = stmts.NewUser.Exec("jerry1")
+		_, err = stmts.NewUser.Exec("jerry1", "sgfdljhk")
 		if err != nil {
 			t.Error(err.Error())
 			t.Fail()
@@ -34,7 +34,7 @@ func TestStmt(t *testing.T) {
 		}
 	}()
 	go func() {
-		_, err = stmts.NewUser.Exec("jerry2")
+		_, err = stmts.NewUser.Exec("jerry2", "adflhkjs")
 		if err != nil {
 			t.Error(err.Error())
 			t.Fail()
@@ -42,7 +42,7 @@ func TestStmt(t *testing.T) {
 		}
 	}()
 	go func() {
-		_, err = stmts.NewUser.Exec("jerry3")
+		_, err = stmts.NewUser.Exec("jerry3", "wtprueio")
 		if err != nil {
 			t.Error(err.Error())
 			t.Fail()

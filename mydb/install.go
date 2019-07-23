@@ -78,22 +78,19 @@ func installDB(managerUser string, managerPassword string, addr string, appDbNam
 
 	// create tables
 	// users
-	_, err = db2.Exec("create table users(" +
-		"`user_id` int not null auto_increment,`name` varchar(255) unique,`privilege` tinyint default 0,primary key (`user_id`));")
+	_, err = db2.Exec("create table users ( `user_id` int not null auto_increment, `hash` text not null, `name` varchar(255) unique, `privilege` tinyint default 0, primary key (`user_id`) );")
 	if err != nil {
 		return newDbError("Fail to create users table: " + err.Error())
 	}
 
 	// groups
-	_, err = db2.Exec("create table `groups` (" +
-		"`group_id` int not null auto_increment,`name` varchar(512),`user_id` int not null,primary key (`group_id`),foreign key (`user_id`)references users(`user_id`)on delete cascade on update cascade);")
+	_, err = db2.Exec("create table `groups` (`group_id` int not null auto_increment,`name` varchar(512),`user_id` int not null,primary key (`group_id`),foreign key (`user_id`)references users(`user_id`)on delete cascade on update cascade);")
 	if err != nil {
 		return newDbError("Fail to create groups table: " + err.Error())
 	}
 
 	// ticket
-	_, err = db2.Exec("create table `ticket` " +
-		"( `ticket_index` int not null auto_increment, `id` varchar(512), `token` text, `group_id` int not null, primary key (`ticket_index`), foreign key (`group_id`) references `groups`(`group_id`) on delete cascade on update cascade );")
+	_, err = db2.Exec("create table `ticket` ( `ticket_index` int not null auto_increment, `id` varchar(512), `token` text, `group_id` int not null, primary key (`ticket_index`), foreign key (`group_id`) references `groups`(`group_id`) on delete cascade on update cascade );")
 	if err != nil {
 		return newDbError("Fail to create ticket table: " + err.Error())
 	}
