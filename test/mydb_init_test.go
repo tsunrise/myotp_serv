@@ -3,7 +3,6 @@ package test
 import (
 	"myotp_serv/mydb"
 	"testing"
-	"time"
 )
 
 func TestParseJson(t *testing.T) {
@@ -25,6 +24,7 @@ func TestStmt(t *testing.T) {
 		t.Fail()
 		return
 	}
+	process := make(chan *interface{})
 	go func() {
 		_, err = stmts.NewUser.Exec("jerry1", "sgfdljhk")
 		if err != nil {
@@ -32,6 +32,7 @@ func TestStmt(t *testing.T) {
 			t.Fail()
 			return
 		}
+		process <- nil
 	}()
 	go func() {
 		_, err = stmts.NewUser.Exec("jerry2", "adflhkjs")
@@ -40,6 +41,7 @@ func TestStmt(t *testing.T) {
 			t.Fail()
 			return
 		}
+		process <- nil
 	}()
 	go func() {
 		_, err = stmts.NewUser.Exec("jerry3", "wtprueio")
@@ -48,8 +50,15 @@ func TestStmt(t *testing.T) {
 			t.Fail()
 			return
 		}
+		process <- nil
 	}()
 
-	time.Sleep(3 * time.Second)
-	_, _ = db.Exec("delete from users where name like 'jerry%';")
+	for i := 0; i < 3; i++ {
+		<-process
+	}
+	_, err = db.Exec("delete from users where name like 'jerry%';")
+	if err != nil {
+		t.Error(err.Error())
+		t.Fail()
+	}
 }
