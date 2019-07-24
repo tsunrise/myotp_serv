@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log"
 	"myotp_serv/mydb"
-	"myotp_serv/shell"
-	"myotp_serv/util/urlUtil"
 	"net/http"
 )
 
@@ -46,16 +44,8 @@ func (s httpServer) ServeHTTP(response http.ResponseWriter, request *http.Reques
 	// before the url matching
 	logRequest(request)
 
-	switch path := request.URL.Path; true {
-	case urlUtil.MatchExact(path, "/"):
-		hello := struct {
-			Working bool
-		}{true}
-		resp := shell.NewResponseStructure(hello)
-		resp.Json(response)
-	default:
-		shell.ErrorNotFound(response, request)
-	}
+	// go to url matching
+	indexRouter(s, response, request)
 }
 
 func logRequest(request *http.Request) {
