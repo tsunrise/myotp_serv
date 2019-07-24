@@ -20,7 +20,7 @@ func InitDB() (*sql.DB, *StatementsSet, error) {
 		return nil, nil, newDbError("Fail to connect database: " + err.Error())
 	}
 
-	log.Println("Database connection has been established: " +
+	log.Println("Try to connect to database: " +
 		fmt.Sprintf("%v@tcp(%v)/%v", info.AppUserName, info.SqlAddr, info.DatabaseName))
 
 	// show table lists
