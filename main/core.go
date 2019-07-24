@@ -12,7 +12,7 @@ import (
 func main() {
 	// parse flags
 	installMode := flag.Bool("install", false, "Configure this app. ")
-	port := flag.Int("port", 8080, "Set the portal. (Default: 8080)")
+	port := flag.Int("port", 8080, "Set the portal.")
 	flag.Parse()
 
 	// handle install
