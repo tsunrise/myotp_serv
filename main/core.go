@@ -3,25 +3,28 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"fmt"
 	"log"
 	"myotp_serv/mydb"
 	"myotp_serv/shell"
+	"myotp_serv/util/urlUtil"
 	"net/http"
 )
 
 func main() {
 	// parse flags
-	installMode := flag.Bool("install", false, "install mode")
+	installMode := flag.Bool("install", false, "Configure this app. ")
+	port := flag.Int("port", 8080, "Set the portal. (Default: 8080)")
 	flag.Parse()
 
-	// install
+	// handle install
 	if *installMode {
 		mydb.Install()
 		return
 	}
 
 	// initialize database
-	db, _, err := mydb.InitDB()
+	db, stmt, err := mydb.InitDB()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -30,27 +33,27 @@ func main() {
 	}
 
 	log.Println("Started: MyOTP Backend Server Development Edition")
-	http.Handle("/", httpServer{})
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	http.Handle("/", httpServer{db, stmt})
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", *port), nil))
 }
 
 type httpServer struct {
-	Database sql.DB
+	Database     *sql.DB
+	DBStatements *mydb.StatementsSet
 }
 
 func (s httpServer) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	// before the url matching
 	logRequest(request)
 
-	switch request.URL.Path {
-	case "/":
+	switch path := request.URL.Path; true {
+	case urlUtil.MatchExact(path, "/"):
 		hello := struct {
 			Working bool
 		}{true}
 		resp := shell.NewResponseStructure(hello)
 		resp.Json(response)
 	default:
-		logRequest(request)
 		shell.ErrorNotFound(response, request)
 	}
 }
