@@ -45,6 +45,13 @@ func (s StoreSet) Produce() (token string) {
 	return token
 }
 
+// delete the token and corresponding storage area. If no such token exists, do nothing.
+func (s StoreSet) Destroy(token string) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	delete(s.dict, token)
+}
+
 type UserStore struct {
 	intMap    map[string]int
 	stringMap map[string]string
