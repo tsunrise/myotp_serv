@@ -43,6 +43,15 @@ func ErrorNotImplemented(w http.ResponseWriter, r *http.Request, serviceName str
 	e.Json(w)
 }
 
+func ErrorMissingParam(w http.ResponseWriter, missingParam string) {
+	NewMyError("Bad Request", fmt.Sprintf("Missing Parameter %v", missingParam), http.StatusBadRequest).Json(w)
+}
+
+func ErrorDatabaseError(w http.ResponseWriter, during string) {
+	NewMyError("Database Error", "An error occured when fetching data from the backend database. "+
+		"The following process is not successful: "+during, http.StatusInternalServerError).Json(w)
+}
+
 func ErrorCriticalError(detail string, response http.ResponseWriter) {
 	http.Error(response, "Critical Error: "+detail, http.StatusInternalServerError)
 }
