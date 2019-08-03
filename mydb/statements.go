@@ -3,10 +3,12 @@ package mydb
 import "database/sql"
 
 type StatementsSet struct {
-	NewUser     *sql.Stmt //name, hash
-	DeleteUser  *sql.Stmt //user_id
-	PromoteUser *sql.Stmt //user_id (set privilege to 1)
-	FireUser    *sql.Stmt //user_id (set privilege to 0)
+	NewUser           *sql.Stmt //name, hash
+	DeleteUser        *sql.Stmt //user_id
+	PromoteUser       *sql.Stmt //user_id (set privilege to 1)
+	FireUser          *sql.Stmt //user_id (set privilege to 0)
+	SelectUser        *sql.Stmt //user_id -> name, privilege, hash
+	CheckUserHashByID *sql.Stmt // user_id, hash -> user_id, name, privilege
 }
 
 func NewStatements(db *sql.DB) (*StatementsSet, error) {
@@ -27,10 +29,22 @@ func NewStatements(db *sql.DB) (*StatementsSet, error) {
 		return nil, err
 	}
 
+	selectUser, err := db.Prepare("select name, privilege from users where user_id = ?")
+	if err != nil {
+		return nil, err
+	}
+
+	checkUserHashByID, err := db.Prepare("select user_id, name, privilege from users where user_id = ? and hash = ?")
+	if err != nil {
+		return nil, err
+	}
+
 	return &StatementsSet{
-		NewUser:     newUser,
-		DeleteUser:  deleteUser,
-		PromoteUser: promoteUser,
-		FireUser:    fireUser,
+		NewUser:           newUser,
+		DeleteUser:        deleteUser,
+		PromoteUser:       promoteUser,
+		FireUser:          fireUser,
+		SelectUser:        selectUser,
+		CheckUserHashByID: checkUserHashByID,
 	}, nil
 }

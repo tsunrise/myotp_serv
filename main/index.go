@@ -13,7 +13,7 @@ func indexRouter(s httpServer, response http.ResponseWriter, request *http.Reque
 	case Match(path, "status"):
 		status.Handler(response, request, s.Database)
 	case Match(path, "auth"):
-		auth.Handler(response, request, s.DBStatements)
+		auth.Handler(response, request, s.DBStatements, s.StoreSet)
 	default:
 		shell.ErrorNotFound(response, request)
 	}
