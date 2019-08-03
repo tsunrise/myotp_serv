@@ -15,25 +15,39 @@ func TestTokenStore(t *testing.T) {
 		return
 	}
 
+	status := make(chan bool)
+
 	store1.SetInt("time_plus", 1)
 	store1.SetFloat("time_plus", 1.2)
 	store1.SetString("great", "megumin")
 
-	if v, _ := store1.GetInt("time_plus"); v != 1 {
-		t.Error("time_plus int mismatch")
-		t.Fail()
-	}
+	go func() {
+		if v, _ := store1.GetInt("time_plus"); v != 1 {
+			t.Error("time_plus int mismatch")
+			t.Fail()
+		}
+		status <- true
+	}()
 
-	if v, _ := store1.GetFloat("time_plus"); v != 1.2 {
-		t.Error("time_plus float mismatch")
-		t.Fail()
-	}
+	go func() {
+		if v, _ := store1.GetFloat("time_plus"); v != 1.2 {
+			t.Error("time_plus float mismatch")
+			t.Fail()
+		}
+		status <- true
+	}()
 
-	if v, _ := store1.GetString("great"); v != "megumin" {
-		t.Error("great string mismatch")
-		t.Fail()
-	}
+	go func() {
+		if v, _ := store1.GetString("great"); v != "megumin" {
+			t.Error("great string mismatch")
+			t.Fail()
+		}
+		status <- true
+	}()
 
+	<-status
+	<-status
+	<-status
 	token2 := storeSet.Produce()
 	store2, err := storeSet.Open(token2)
 	if err != nil {

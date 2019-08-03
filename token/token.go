@@ -2,26 +2,32 @@ package token
 
 import (
 	"myotp_serv/util"
+	"sync"
 	"time"
 )
 
-type StoreSet map[string]*UserStore
+type StoreSet struct {
+	dict  map[string]*UserStore
+	mutex sync.RWMutex
+}
 
 const expiration = time.Hour * 24
 const tokenSize = 64
 
 func NewStoreSet() StoreSet {
-	return make(StoreSet)
+	return StoreSet{dict: make(map[string]*UserStore)}
 }
 
 // open a user store by the token
 func (s StoreSet) Open(token string) (store *UserStore, err error) {
-	store, ok := s[token]
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	store, ok := s.dict[token]
 	if !ok {
 		return store, newTokenError("The token given is invalid or has expired. Please login again. ")
 	}
 	if store.IsDue() {
-		delete(s, token)
+		delete(s.dict, token)
 		return store, newTokenError("Your session has expired and it has been deleted. ")
 	}
 	return store, nil
@@ -29,11 +35,13 @@ func (s StoreSet) Open(token string) (store *UserStore, err error) {
 
 // create a UserStore and return its token
 func (s StoreSet) Produce() (token string) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	token = util.RandStringBytesRmndr(tokenSize)
-	for _, exist := s[token]; exist; {
+	for _, exist := s.dict[token]; exist; {
 		token = util.RandStringBytesRmndr(tokenSize)
 	}
-	s[token] = makeUserStore()
+	s.dict[token] = makeUserStore()
 	return token
 }
 
@@ -42,6 +50,7 @@ type UserStore struct {
 	stringMap map[string]string
 	floatMap  map[string]float64
 	dueTime   time.Time
+	mutex     sync.RWMutex
 }
 
 func makeUserStore() *UserStore {
@@ -50,35 +59,50 @@ func makeUserStore() *UserStore {
 		make(map[string]string),
 		make(map[string]float64),
 		time.Now().Add(expiration),
+		sync.RWMutex{},
 	}
 }
 
 func (u *UserStore) IsDue() bool {
+	u.mutex.RLock()
+	defer u.mutex.RUnlock()
 	return time.Now().After(u.dueTime)
 }
 
 func (u *UserStore) GetInt(key string) (int, bool) {
+	u.mutex.RLock()
+	defer u.mutex.RUnlock()
 	v, ok := u.intMap[key]
 	return v, ok
 }
 func (u *UserStore) GetString(key string) (string, bool) {
+	u.mutex.RLock()
+	defer u.mutex.RUnlock()
 	v, ok := u.stringMap[key]
 	return v, ok
 }
 func (u *UserStore) GetFloat(key string) (float64, bool) {
+	u.mutex.RLock()
+	defer u.mutex.RUnlock()
 	v, ok := u.floatMap[key]
 	return v, ok
 }
 
 func (u *UserStore) SetInt(key string, value int) {
+	u.mutex.Lock()
+	defer u.mutex.Unlock()
 	u.intMap[key] = value
 }
 
 func (u *UserStore) SetString(key string, value string) {
+	u.mutex.Lock()
+	defer u.mutex.Unlock()
 	u.stringMap[key] = value
 }
 
 func (u *UserStore) SetFloat(key string, value float64) {
+	u.mutex.Lock()
+	defer u.mutex.Unlock()
 	u.floatMap[key] = value
 }
 
