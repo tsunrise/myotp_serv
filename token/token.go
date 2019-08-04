@@ -1,6 +1,8 @@
 package token
 
 import (
+	"fmt"
+	"log"
 	"myotp_serv/util"
 	"sync"
 	"time"
@@ -13,9 +15,36 @@ type StoreSet struct {
 
 const expiration = time.Hour * 24
 const tokenSize = 64
+const cleanTime = expiration
 
-func NewStoreSet() StoreSet {
-	return StoreSet{dict: make(map[string]*UserStore)}
+func NewStoreSet() (storeSet StoreSet) {
+	storeSet = StoreSet{dict: make(map[string]*UserStore)}
+	go storeSet.registerClean()
+	return
+}
+
+func (s StoreSet) registerClean() {
+	for {
+		time.Sleep(cleanTime)
+		s.mutex.RLock()
+		cleaned := 0
+		dueTokens := make([]string, 8)
+		for t, u := range s.dict {
+			if u.IsDue() {
+				dueTokens = append(dueTokens, t)
+				cleaned += 1
+			}
+		}
+		s.mutex.RUnlock()
+		s.mutex.Lock()
+		for _, t := range dueTokens {
+			delete(s.dict, t)
+		}
+		s.mutex.Unlock()
+		if cleaned != 0 {
+			log.Println(fmt.Sprintf("Cleaned %v tokens", cleaned))
+		}
+	}
 }
 
 // open a user store by the token
@@ -27,7 +56,7 @@ func (s StoreSet) Open(token string) (store *UserStore, err error) {
 		return store, newTokenError("The token given is invalid or has expired. Please login again. ")
 	}
 	if store.IsDue() {
-		delete(s.dict, token)
+		go s.Destroy(token)
 		return store, newTokenError("Your session has expired and it has been deleted. ")
 	}
 	return store, nil
@@ -48,8 +77,8 @@ func (s StoreSet) Produce() (token string) {
 // delete the token and corresponding storage area. If no such token exists, do nothing.
 func (s StoreSet) Destroy(token string) {
 	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	delete(s.dict, token)
+	s.mutex.Unlock()
 }
 
 type UserStore struct {
