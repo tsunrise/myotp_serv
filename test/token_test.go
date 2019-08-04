@@ -1,12 +1,12 @@
 package test
 
 import (
-	"myotp_serv/token"
+	"myotp_serv/tokenLib"
 	"testing"
 )
 
 func TestTokenStore(t *testing.T) {
-	storeSet := token.NewStoreSet()
+	storeSet := tokenLib.NewStoreSet()
 	token1 := storeSet.Produce()
 	store1, err := storeSet.Open(token1)
 	if err != nil {

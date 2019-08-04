@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 	"myotp_serv/mydb"
-	"myotp_serv/token"
+	"myotp_serv/tokenLib"
 	"net/http"
 )
 
@@ -32,14 +32,14 @@ func main() {
 	}
 
 	log.Println("Started: MyOTP Backend Server Development Edition")
-	http.Handle("/", httpServer{db, stmt, token.NewStoreSet()})
+	http.Handle("/", httpServer{db, stmt, tokenLib.NewStoreSet()})
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", *port), nil))
 }
 
 type httpServer struct {
 	Database     *sql.DB
 	DBStatements *mydb.StatementsSet
-	StoreSet     token.StoreSet
+	StoreSet     tokenLib.StoreSet
 }
 
 func (s httpServer) ServeHTTP(response http.ResponseWriter, request *http.Request) {

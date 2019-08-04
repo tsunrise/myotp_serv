@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"myotp_serv/mydb"
 	"myotp_serv/shell"
-	"myotp_serv/token"
+	"myotp_serv/tokenLib"
 	"net/http"
 )
 
-func LoginHandler(w http.ResponseWriter, r *http.Request, stmt *mydb.StatementsSet, storeSet token.StoreSet) {
+func LoginHandler(w http.ResponseWriter, r *http.Request, stmt *mydb.StatementsSet, storeSet tokenLib.StoreSet) {
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		loginByName(w, r, stmt)
@@ -80,7 +80,7 @@ func getInfo(rows *sql.Rows) (success bool, id int, name string, privilege int, 
 
 }
 
-func saveUserStatus(storeSet token.StoreSet, id int) (token string) {
+func saveUserStatus(storeSet tokenLib.StoreSet, id int) (token string) {
 	token = storeSet.Produce()
 	userStore, _ := storeSet.Open(token)
 	userStore.SetInt("id", id)

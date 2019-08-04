@@ -52,6 +52,10 @@ func ErrorDatabaseError(w http.ResponseWriter, during string) {
 		"The following process is not successful: "+during, http.StatusInternalServerError).Json(w)
 }
 
+func ErrorAuthError(w http.ResponseWriter, text string) {
+	NewMyError("Invalid Credentials", text, http.StatusForbidden).Json(w)
+}
+
 func ErrorCriticalError(detail string, response http.ResponseWriter) {
 	http.Error(response, "Critical Error: "+detail, http.StatusInternalServerError)
 }
