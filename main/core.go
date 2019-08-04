@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"myotp_serv/mydb"
+	"myotp_serv/shell"
 	"myotp_serv/tokenLib"
 	"net/http"
 )
@@ -43,6 +44,13 @@ type httpServer struct {
 }
 
 func (s httpServer) ServeHTTP(response http.ResponseWriter, request *http.Request) {
+	// URL protection
+	if len(request.URL.Path) > 1024 || len(request.URL.RequestURI()) > 65535 {
+		shell.NewMyError("Request Rejected", "Request URI is too long.", http.StatusForbidden).Json(response)
+		log.Printf("IP: %v API: %v Agent: %v", request.RemoteAddr, "...", request.Header.Get("User-Agent"))
+		return
+	}
+
 	// before the url matching
 	logRequest(request)
 
@@ -51,5 +59,5 @@ func (s httpServer) ServeHTTP(response http.ResponseWriter, request *http.Reques
 }
 
 func logRequest(request *http.Request) {
-	log.Printf("IP: %v Route: / Agent: %v", request.RemoteAddr, request.Header.Get("User-Agent"))
+	log.Printf("IP: %v API: %v Agent: %v", request.RemoteAddr, request.URL.Path, request.Header.Get("User-Agent"))
 }
