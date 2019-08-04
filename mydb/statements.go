@@ -29,7 +29,7 @@ func NewStatements(db *sql.DB) (*StatementsSet, error) {
 		return nil, err
 	}
 
-	selectUser, err := db.Prepare("select name, privilege from users where user_id = ?")
+	selectUser, err := db.Prepare("select name, privilege, hash from users where user_id = ?")
 	if err != nil {
 		return nil, err
 	}
