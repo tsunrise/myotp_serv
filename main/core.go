@@ -46,7 +46,7 @@ type httpServer struct {
 func (s httpServer) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	// URL protection
 	if len(request.URL.Path) > 1024 || len(request.URL.RequestURI()) > 65535 {
-		shell.NewMyError("Request Rejected", "Request URI is too long.", http.StatusForbidden).Json(response)
+		shell.NewMyError("Request Rejected", "Request URI is too long.", http.StatusBadRequest).Json(response)
 		log.Printf("IP: %v API: %v Agent: %v", request.RemoteAddr, "...", request.Header.Get("User-Agent"))
 		return
 	}
