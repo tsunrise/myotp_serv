@@ -17,13 +17,13 @@ const expiration = time.Hour * 24
 const tokenSize = 64
 const cleanTime = expiration
 
-func NewStoreSet() (storeSet StoreSet) {
-	storeSet = StoreSet{dict: make(map[string]*UserStore)}
+func NewStoreSet() (storeSet *StoreSet) {
+	storeSet = &StoreSet{dict: make(map[string]*UserStore)}
 	go storeSet.registerClean()
 	return
 }
 
-func (s StoreSet) registerClean() {
+func (s *StoreSet) registerClean() {
 	for {
 		time.Sleep(cleanTime)
 		s.mutex.RLock()
@@ -32,15 +32,11 @@ func (s StoreSet) registerClean() {
 		for t, u := range s.dict {
 			if u.IsDue() {
 				dueTokens = append(dueTokens, t)
+				go s.Destroy(t)
 				cleaned += 1
 			}
 		}
 		s.mutex.RUnlock()
-		s.mutex.Lock()
-		for _, t := range dueTokens {
-			delete(s.dict, t)
-		}
-		s.mutex.Unlock()
 		if cleaned != 0 {
 			log.Println(fmt.Sprintf("Cleaned %v tokens", cleaned))
 		}
@@ -48,7 +44,7 @@ func (s StoreSet) registerClean() {
 }
 
 // open a user store by the token
-func (s StoreSet) Open(token string) (store *UserStore, err error) {
+func (s *StoreSet) Open(token string) (store *UserStore, err error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 	store, ok := s.dict[token]
@@ -63,7 +59,7 @@ func (s StoreSet) Open(token string) (store *UserStore, err error) {
 }
 
 // create a UserStore and return its token
-func (s StoreSet) Produce() (token string) {
+func (s *StoreSet) Produce() (token string) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	token = util.RandStringBytesRmndr(tokenSize)
@@ -75,7 +71,7 @@ func (s StoreSet) Produce() (token string) {
 }
 
 // delete the token and corresponding storage area. If no such token exists, do nothing.
-func (s StoreSet) Destroy(token string) {
+func (s *StoreSet) Destroy(token string) {
 	s.mutex.Lock()
 	delete(s.dict, token)
 	s.mutex.Unlock()

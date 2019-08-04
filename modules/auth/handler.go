@@ -8,10 +8,10 @@ import (
 	"net/http"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request, stmt *mydb.StatementsSet, storeSet tokenLib.StoreSet) {
+func Handler(w http.ResponseWriter, r *http.Request, stmt *mydb.StatementsSet, storeSet *tokenLib.StoreSet) {
 	switch path := r.URL.Path; {
 	case urlUtil.MatchExact(path, "auth/status"):
-		shell.ErrorNotImplemented(w, r, "Auth Status Check")
+		StatusCheckHandler(w, r, storeSet, stmt)
 	case urlUtil.MatchExact(path, "auth/login"):
 		LoginHandler(w, r, stmt, storeSet)
 	default:

@@ -39,7 +39,7 @@ func main() {
 type httpServer struct {
 	Database     *sql.DB
 	DBStatements *mydb.StatementsSet
-	StoreSet     tokenLib.StoreSet
+	StoreSet     *tokenLib.StoreSet
 }
 
 func (s httpServer) ServeHTTP(response http.ResponseWriter, request *http.Request) {
