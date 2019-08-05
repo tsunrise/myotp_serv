@@ -19,6 +19,10 @@ func NewMyError(title string, details string, status int) *MyError {
 	return &MyError{Error: true, Status: status, Title: title, Details: details, Timestamp: time.Now().Unix()}
 }
 
+func PrintNewMyError(w http.ResponseWriter, title string, details string, status int) {
+	NewMyError(title, details, status).Json(w)
+}
+
 func (e MyError) Json(response http.ResponseWriter) {
 	response.Header().Set("Content-Type", "application/json")
 	response.WriteHeader(e.Status)

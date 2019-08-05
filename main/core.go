@@ -59,5 +59,5 @@ func (s httpServer) ServeHTTP(response http.ResponseWriter, request *http.Reques
 }
 
 func logRequest(request *http.Request) {
-	log.Printf("IP: %v API: %v Agent: %v", request.RemoteAddr, request.URL.Path, request.Header.Get("User-Agent"))
+	log.Printf("IP: %v %v: %v Agent: %v", request.RemoteAddr, request.Method, request.URL.Path, request.Header.Get("User-Agent"))
 }
