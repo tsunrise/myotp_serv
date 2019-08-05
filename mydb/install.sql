@@ -17,6 +17,7 @@ create table `groups` (
                           `group_id` int not null auto_increment,
                           `name` varchar(512),
                           `user_id` int not null,
+                          time     timestamp default CURRENT_TIMESTAMP not null,
                           primary key (`group_id`),
                           foreign key (`user_id`)
                               references users (`user_id`)

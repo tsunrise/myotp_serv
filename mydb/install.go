@@ -84,7 +84,7 @@ func installDB(managerUser string, managerPassword string, addr string, appDbNam
 	}
 
 	// groups
-	_, err = db2.Exec("create table `groups` (`group_id` int not null auto_increment,`name` varchar(512),`user_id` int not null,primary key (`group_id`),foreign key (`user_id`)references users(`user_id`)on delete cascade on update cascade);")
+	_, err = db2.Exec("create table `groups` (`group_id` int not null auto_increment,`name` varchar(512),`user_id` int not null,time  timestamp default CURRENT_TIMESTAMP not null,primary key (`group_id`),foreign key (`user_id`)references users(`user_id`)on delete cascade on update cascade);")
 	if err != nil {
 		return newDbError("Fail to create groups table: " + err.Error())
 	}
