@@ -30,6 +30,7 @@ create table `ticket` (
                           `id` varchar(512),
                           `token` text,
                           `group_id` int not null,
+                          `num_scanned` int default 0 null,
                           primary key (`ticket_index`),
                           foreign key (`group_id`)
                               references `groups`(`group_id`)

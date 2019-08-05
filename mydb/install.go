@@ -90,7 +90,7 @@ func installDB(managerUser string, managerPassword string, addr string, appDbNam
 	}
 
 	// ticket
-	_, err = db2.Exec("create table `ticket` ( `ticket_index` int not null auto_increment, `id` varchar(512), `token` text, `group_id` int not null, primary key (`ticket_index`), foreign key (`group_id`) references `groups`(`group_id`) on delete cascade on update cascade );")
+	_, err = db2.Exec("create table `ticket` ( `ticket_index` int not null auto_increment, `id` varchar(512), `token` text, `group_id` int not null, `num_scanned` int default 0 null, primary key (`ticket_index`), foreign key (`group_id`) references `groups`(`group_id`) on delete cascade on update cascade );")
 	if err != nil {
 		return newDbError("Fail to create ticket table: " + err.Error())
 	}
