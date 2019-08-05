@@ -9,15 +9,15 @@ import (
 	"net/http"
 )
 
-func indexRouter(s httpServer, response http.ResponseWriter, request *http.Request) {
-	switch path := request.URL.Path; {
+func indexRouter(s httpServer, w http.ResponseWriter, r *http.Request) {
+	switch path := r.URL.Path; {
 	case Match(path, "status"):
-		status.Handler(response, request, s.Database)
+		status.Handler(w, r, s.Database)
 	case Match(path, "auth"):
-		auth.Handler(response, request, s.DBStatements, s.StoreSet)
+		auth.Handler(w, r, s.DBStatements, s.StoreSet)
 	case Match(path, "ticket"):
-		tickets.Handler(response, request, s.StoreSet, s.DBStatements, s.Database)
+		tickets.Handler(w, r, s.StoreSet, s.DBStatements, s.Database)
 	default:
-		shell.ErrorNotFound(response, request)
+		shell.ErrorNotFound(w, r)
 	}
 }
