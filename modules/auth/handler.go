@@ -14,6 +14,8 @@ func Handler(w http.ResponseWriter, r *http.Request, stmt *mydb.StatementsSet, s
 		StatusCheckHandler(w, r, storeSet, stmt)
 	case urlUtil.MatchExact(path, "auth/login"):
 		LoginHandler(w, r, stmt, storeSet)
+	case urlUtil.MatchExact(path, "auth/create"):
+		UserCreateHandler(w, r, stmt)
 	default:
 		shell.ErrorNotFound(w, r)
 	}
