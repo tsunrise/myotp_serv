@@ -9,8 +9,6 @@ import (
 
 func UserCreateHandler(w http.ResponseWriter, r *http.Request, stmt *mydb.StatementsSet) {
 	switch r.Method {
-	case "GET":
-		shell.NewMyError("GET not allowed", "Only support POST request. ", http.StatusBadRequest).Json(w)
 	case "POST":
 		gotData := struct {
 			Name string `json:"name"`
@@ -37,6 +35,8 @@ func UserCreateHandler(w http.ResponseWriter, r *http.Request, stmt *mydb.Statem
 		shell.NewResponseStructure(struct {
 			Success bool `json:"success"`
 		}{success}).Json(w)
+	default:
+		shell.ErrorRequestMethodError(w, r, "POST")
 
 	}
 }
