@@ -11,8 +11,8 @@ import (
 
 func Handler(w http.ResponseWriter, r *http.Request, ss *tokenLib.StoreSet, stmt *mydb.StatementsSet, db *sql.DB) {
 	switch path := r.URL.Path; {
-	case urlUtil.MatchExact(path, "ticket/new_group"):
-		shell.ErrorNotImplemented(w, r, "new_group")
+	case urlUtil.MatchExact(path, "ticket/create_group"):
+		CreateGroupHandler(w, r, ss, stmt)
 	case urlUtil.MatchExact(path, "ticket/populate"): // generate tickets
 		shell.ErrorNotImplemented(w, r, "populate")
 	case urlUtil.MatchExact(path, "ticket/scan"): // verify ticket and num_scanned += 1

@@ -9,6 +9,8 @@ type StatementsSet struct {
 	FireUser          *sql.Stmt //user_id (set privilege to 0)
 	SelectUser        *sql.Stmt //user_id -> name, privilege, hash
 	CheckUserHashByID *sql.Stmt // user_id, hash -> user_id, name, privilege
+	CreateGroup       *sql.Stmt // name, user_id
+	ViewGroups        *sql.Stmt // user_id, offset
 }
 
 func NewStatements(db *sql.DB) (*StatementsSet, error) {
@@ -39,6 +41,16 @@ func NewStatements(db *sql.DB) (*StatementsSet, error) {
 		return nil, err
 	}
 
+	createGroup, err := db.Prepare("insert into `groups`(name, user_id) values (?, ?)")
+	if err != nil {
+		return nil, err
+	}
+
+	viewGroups, err := db.Prepare("select group_id, name, time from `groups` where user_id = ? order by time desc limit ?, 10")
+	if err != nil {
+		return nil, err
+	}
+
 	return &StatementsSet{
 		NewUser:           newUser,
 		DeleteUser:        deleteUser,
@@ -46,5 +58,7 @@ func NewStatements(db *sql.DB) (*StatementsSet, error) {
 		FireUser:          fireUser,
 		SelectUser:        selectUser,
 		CheckUserHashByID: checkUserHashByID,
+		CreateGroup:       createGroup,
+		ViewGroups:        viewGroups,
 	}, nil
 }
