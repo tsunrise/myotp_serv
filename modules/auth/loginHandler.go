@@ -2,6 +2,7 @@ package auth
 
 import (
 	"database/sql"
+	"encoding/json"
 	"myotp_serv/mydb"
 	"myotp_serv/shell"
 	"myotp_serv/tokenLib"
@@ -9,19 +10,34 @@ import (
 )
 
 func LoginHandler(w http.ResponseWriter, r *http.Request, stmt *mydb.StatementsSet, storeSet *tokenLib.StoreSet) {
-	id := r.URL.Query().Get("id")
-	if id == "" {
+	if r.Method != "POST" {
+		shell.ErrorRequestMethodError(w, r, "POST")
+		return
+	}
+
+	postData := struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+		Hash string `json:"hash"`
+	}{}
+
+	err := json.NewDecoder(r.Body).Decode(&postData)
+	if err != nil {
+		shell.NewMyError("Bad JSON Format", err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if postData.ID == "" {
 		loginByName(w, r, stmt)
 		return
 	}
 
-	hash := r.URL.Query().Get("hash")
-	if hash == "" {
+	if postData.Hash == "" {
 		shell.ErrorMissingParam(w, "hash")
 		return
 	}
 
-	rows, err := stmt.CheckUserHashByID.Query(id, hash)
+	rows, err := stmt.CheckUserHashByID.Query(postData.ID, postData.Hash)
 	if err != nil {
 		shell.ErrorDatabaseError(w, "CheckUserHashByID")
 	}
@@ -50,18 +66,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, stmt *mydb.StatementsS
 }
 
 func loginByName(w http.ResponseWriter, r *http.Request, stmt *mydb.StatementsSet) {
-	name := r.URL.Query().Get("name")
-	if name == "" {
-		shell.ErrorMissingParam(w, "id or name")
-		return
-	}
-
-	hash := r.URL.Query().Get("hash")
-	if hash == "" {
-		shell.ErrorMissingParam(w, "hash")
-		return
-	}
-
 	shell.ErrorNotImplemented(w, r, "Login By Name")
 }
 
