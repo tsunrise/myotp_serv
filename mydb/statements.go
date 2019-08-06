@@ -10,7 +10,7 @@ type StatementsSet struct {
 	SelectUser        *sql.Stmt //user_id -> name, privilege, hash
 	CheckUserHashByID *sql.Stmt // user_id, hash -> user_id, name, privilege
 	CreateGroup       *sql.Stmt // name, user_id
-	ViewGroups        *sql.Stmt // user_id, offset
+	ViewGroups        *sql.Stmt // user_id, offset -> group_id, name, time
 }
 
 func NewStatements(db *sql.DB) (*StatementsSet, error) {
@@ -46,7 +46,7 @@ func NewStatements(db *sql.DB) (*StatementsSet, error) {
 		return nil, err
 	}
 
-	viewGroups, err := db.Prepare("select group_id, name, time from `groups` where user_id = ? order by time desc limit ?, 10")
+	viewGroups, err := db.Prepare("select group_id, name, unix_timestamp(time) from `groups` where user_id = ? order by time desc limit ?, 10")
 	if err != nil {
 		return nil, err
 	}

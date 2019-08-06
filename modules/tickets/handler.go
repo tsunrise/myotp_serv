@@ -13,6 +13,8 @@ func Handler(w http.ResponseWriter, r *http.Request, ss *tokenLib.StoreSet, stmt
 	switch path := r.URL.Path; {
 	case urlUtil.MatchExact(path, "ticket/create_group"):
 		CreateGroupHandler(w, r, ss, stmt)
+	case urlUtil.MatchExact(path, "ticket/view_group"):
+		ViewGroupHandler(w, r, ss, stmt)
 	case urlUtil.MatchExact(path, "ticket/populate"): // generate tickets
 		shell.ErrorNotImplemented(w, r, "populate")
 	case urlUtil.MatchExact(path, "ticket/scan"): // verify ticket and num_scanned += 1
