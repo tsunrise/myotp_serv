@@ -60,6 +60,10 @@ func ErrorAuthError(w http.ResponseWriter, text string) {
 	NewMyError("Invalid Credentials", text, http.StatusForbidden).Json(w)
 }
 
+func JSONFormatError(w http.ResponseWriter, detail string) {
+	PrintNewMyError(w, "JSON Format Error", detail, http.StatusBadRequest)
+}
+
 func ErrorRequestMethodError(w http.ResponseWriter, r *http.Request, requiredMethod string) {
 	PrintNewMyError(w, "Wrong Request Method",
 		fmt.Sprintf("This API only allows %v, got %v", requiredMethod, r.Method),
