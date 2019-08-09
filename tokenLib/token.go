@@ -9,34 +9,53 @@ import (
 )
 
 type StoreSet struct {
-	dict  map[string]*UserStore
-	mutex sync.RWMutex
+	hashSentinelNode *hashNode
+	dict             map[string]*UserStore
+	mutex            sync.RWMutex
+}
+
+type hashNode struct {
+	value string
+	prev  *hashNode
+	next  *hashNode
 }
 
 const expiration = time.Hour * 24
 const tokenSize = 64
-const cleanTime = expiration
+const cleanTime = expiration / 2
 
 func NewStoreSet() (storeSet *StoreSet) {
-	storeSet = &StoreSet{dict: make(map[string]*UserStore)}
+	sent := hashNode{}
+	sent.prev = &sent
+	sent.next = &sent
+	storeSet = &StoreSet{hashSentinelNode: &sent, dict: make(map[string]*UserStore)}
 	go storeSet.registerClean()
 	return
 }
 
 func (s *StoreSet) registerClean() {
 	for {
+
 		time.Sleep(cleanTime)
+		log.Println("Start to cleaning tokens")
 		s.mutex.RLock()
 		cleaned := 0
-		dueTokens := make([]string, 8)
-		for t, u := range s.dict {
-			if u.IsDue() {
-				dueTokens = append(dueTokens, t)
-				go s.Destroy(t)
-				cleaned += 1
-			}
+		ptr := s.hashSentinelNode.next
+		wg := sync.WaitGroup{}
+		// if iteration is not over or found a value that is due
+		for s.dict[ptr.value] != nil && s.dict[ptr.value].IsDue() {
+			wg.Add(1)
+			// store the next pointer for reference
+			nextPtr := ptr.next
+			go func(node *hashNode) {
+				s.Destroy(node.value)
+				wg.Done()
+			}(ptr)
+			ptr = nextPtr
+			cleaned++
 		}
 		s.mutex.RUnlock()
+		wg.Wait()
 		if cleaned != 0 {
 			log.Println(fmt.Sprintf("Cleaned %v tokens", cleaned))
 		}
@@ -66,18 +85,29 @@ func (s *StoreSet) Produce() (token string) {
 	for _, exist := s.dict[token]; exist; {
 		token = util.RandStringBytesRmndr(tokenSize)
 	}
-	s.dict[token] = makeUserStore()
+	// generate hash node by adding node at LAST
+	node := hashNode{token, s.hashSentinelNode.prev, s.hashSentinelNode}
+	s.hashSentinelNode.prev.next = &node
+	s.hashSentinelNode.prev = &node
+	s.dict[token] = makeUserStore(&node)
 	return token
 }
 
 // delete the token and corresponding storage area. If no such token exists, do nothing.
 func (s *StoreSet) Destroy(token string) {
 	s.mutex.Lock()
+	uStore := s.dict[token]
+	if uStore != nil {
+		uStore.node.prev.next = uStore.node.next
+		uStore.node.next.prev = uStore.node.prev
+	}
 	delete(s.dict, token)
+	// this node should be garbage collected now
 	s.mutex.Unlock()
 }
 
 type UserStore struct {
+	node      *hashNode
 	intMap    map[string]int
 	stringMap map[string]string
 	floatMap  map[string]float64
@@ -85,8 +115,9 @@ type UserStore struct {
 	mutex     sync.RWMutex
 }
 
-func makeUserStore() *UserStore {
+func makeUserStore(node *hashNode) *UserStore {
 	return &UserStore{
+		node,
 		make(map[string]int),
 		make(map[string]string),
 		make(map[string]float64),
