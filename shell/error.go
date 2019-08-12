@@ -60,7 +60,7 @@ func ErrorAuthError(w http.ResponseWriter, text string) {
 	NewMyError("Invalid Credentials", text, http.StatusForbidden).Json(w)
 }
 
-func JSONFormatError(w http.ResponseWriter, detail string) {
+func ErrorJSONFormatError(w http.ResponseWriter, detail string) {
 	PrintNewMyError(w, "JSON Format Error", detail, http.StatusBadRequest)
 }
 

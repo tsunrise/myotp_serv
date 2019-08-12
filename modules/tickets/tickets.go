@@ -43,7 +43,7 @@ func PopulateTicketsHandler(w http.ResponseWriter, r *http.Request,
 	// process input json
 	err = json.NewDecoder(r.Body).Decode(&postBody)
 	if err != nil {
-		shell.JSONFormatError(w, err.Error())
+		shell.ErrorJSONFormatError(w, err.Error())
 		return
 	}
 
