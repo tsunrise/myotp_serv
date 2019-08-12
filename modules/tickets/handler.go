@@ -18,7 +18,7 @@ func Handler(w http.ResponseWriter, r *http.Request, ss *tokenLib.StoreSet, stmt
 	case urlUtil.MatchExact(path, "ticket/populate"): // generate tickets
 		PopulateTicketsHandler(w, r, ss, stmt, db)
 	case urlUtil.MatchExact(path, "ticket/scan"): // verify ticket and num_scanned += 1
-		shell.ErrorNotImplemented(w, r, "scan")
+		ScanHandler(w, r, ss, stmt)
 	default:
 		shell.ErrorNotFound(w, r)
 	}

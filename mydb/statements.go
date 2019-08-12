@@ -14,6 +14,12 @@ type StatementsSet struct {
 	GIDToUID          *sql.Stmt // group_id -> user_id
 	InsertTicket      *sql.Stmt // id, token, group_id
 	CountGroup        *sql.Stmt // group_id -> count
+	ScanTicket        scanTicket
+}
+
+type scanTicket struct {
+	SelectTicket *sql.Stmt // group_id, id -> token, count
+	AddOneScan   *sql.Stmt // group_id, id
 }
 
 func NewStatements(db *sql.DB) (*StatementsSet, error) {
@@ -69,6 +75,17 @@ func NewStatements(db *sql.DB) (*StatementsSet, error) {
 		return nil, err
 	}
 
+	// scan
+	selectTicket, err := db.Prepare("select token, num_scanned from ticket where group_id = ? and id = ?")
+	if err != nil {
+		return nil, err
+	}
+
+	addOneScan, err := db.Prepare("update ticket set num_scanned = num_scanned + 1 where group_id = ? and id = ?")
+	if err != nil {
+		return nil, err
+	}
+
 	return &StatementsSet{
 		NewUser:           newUser,
 		DeleteUser:        deleteUser,
@@ -81,5 +98,6 @@ func NewStatements(db *sql.DB) (*StatementsSet, error) {
 		GIDToUID:          gid2uid,
 		InsertTicket:      insertTicket,
 		CountGroup:        countGroup,
+		ScanTicket:        scanTicket{SelectTicket: selectTicket, AddOneScan: addOneScan},
 	}, nil
 }
