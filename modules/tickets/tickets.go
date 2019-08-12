@@ -68,7 +68,7 @@ func PopulateTicketsHandler(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	tickets, err := PopulateTicket(userInfo.UserID,
+	tickets, startID, err := PopulateTicket(userInfo.UserID,
 		postBody.GroupID,
 		postBody.TokenLength,
 		postBody.NumTickets,
@@ -81,12 +81,13 @@ func PopulateTicketsHandler(w http.ResponseWriter, r *http.Request,
 	}
 
 	shell.NewResponseStructure(struct {
-		TicketTokens []string
-	}{tickets}).Json(w)
+		TicketTokens []string `json:"ticket_tokens"`
+		StartID      int      `json:"start_id"`
+	}{tickets, startID}).Json(w)
 
 }
 
-func PopulateTicket(uid int, groupID int, tokenLength int, numTicket int, ticketIDFormat string, stmt *mydb.StatementsSet, db *sql.DB, r *http.Request) (tickets []string, err error) {
+func PopulateTicket(uid int, groupID int, tokenLength int, numTicket int, ticketIDFormat string, stmt *mydb.StatementsSet, db *sql.DB, r *http.Request) (tickets []string, startID int, err error) {
 	// check if group exist and group correspond to uid
 	err = checkValidGID(uid, groupID, stmt)
 	if err != nil {
@@ -114,9 +115,9 @@ func PopulateTicket(uid int, groupID int, tokenLength int, numTicket int, ticket
 			if errRb != nil {
 				log.Println("Unable to rollback operation: " + errRb.Error())
 			}
-			return nil, errors.New("Request canceled. ")
+			return nil, -1, errors.New("Request canceled. ")
 		default:
-			token := util.RandStringBytesRmndr(tokenLength)
+			token := util.RandBase32Token(tokenLength)
 			_, err = insertTicketStmt.Exec(
 				strings.Replace(ticketIDFormat, "*", strconv.Itoa(count+i+1), 1), // id
 				token, //token
@@ -133,6 +134,7 @@ func PopulateTicket(uid int, groupID int, tokenLength int, numTicket int, ticket
 	}
 
 	err = tx.Commit()
+	startID = count + 1
 	if err != nil {
 		return
 	}

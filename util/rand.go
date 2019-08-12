@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/base32"
 	"math/rand"
 	"os"
 	"time"
@@ -15,6 +16,16 @@ func RandStringBytesRmndr(n int) string {
 		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
 	}
 	return string(b)
+}
+
+func RandBytes(n int) []byte {
+	bs := make([]byte, n)
+	rand.Read(bs)
+	return bs
+}
+
+func RandBase32Token(n int) string {
+	return base32.StdEncoding.EncodeToString(RandBytes(n))
 }
 
 func setRandomSource() {
